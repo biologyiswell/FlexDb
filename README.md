@@ -13,6 +13,14 @@ This represents some examples from **flexibility** and **readability** provided 
 @Table(name = "engineers")
 public class Engineer {
 
+    public Engineer(int id, int age, String name, String address, String phoneNumber) {
+    	this.id = id;
+	this.name = name;
+	this.age = age;
+	this.address = address;
+	this.phoneNumber = phoneNumber;
+    }
+
     /**
      * This variable is marked with "ColumnAnchor" that is an annotation that is used to
      * represents that this field is main field from class. This annotation is indinpensable
@@ -26,7 +34,7 @@ public class Engineer {
     private int age;  
   
     @Column(name = "name", nonNull = true, updatable = false, type = SqlType.VARCHAR, size = 64)  
-    private String name;  
+    private String name;
   
     @Column(name = "address", nonNull = true, type = SqlType.VARCHAR, size = 128)  
     private String address;  
@@ -38,7 +46,7 @@ public class Engineer {
 // Main.java
 public final FlexDb db = FlexDbFactory.createSingleDatabase(	"localhost", "root", "123", 3306);
 // An Engineer class to use like example, containing (id, name, age, address, phone number, etc.)
-public final Engineer engineer = new Engineer();
+public final Engineer engineer = new Engineer(1, 25, "Foo", "Street Bar", "000-0000 00");
 
 // @Note Insert the Engineer object into database, based on informations that is provided from
 // Engineer class that provide informations about (database name, table name, column
@@ -48,7 +56,7 @@ db.insert(engineer);
 // @Note Insert, this method is few different from other "insert" method, this method use the
 // Engineer class to get the infomrations about (database name, table name, column informations)
 // and the remainder from arguments represents the values from columns in order
-db.insert(Engineer.class, 1, 25, "Foo", "Street Bar", "000-000 00");
+db.insert(Engineer.class, 1, 25, "Foo", "Street Bar", "000-0000 00");
 
 // @Note Update makes the update from the all columns that is marked as "updatable=true"
 db.update(engineer);
