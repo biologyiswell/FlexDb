@@ -16,16 +16,5 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://C:/Stuff/Code/Java/Minecraft/Servers/Server SpigotMC 1.8/spigot.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://C:/Stuff/Code/Java/Minecraft/Servers/Server SpigotMC 1.8/spigot.jar!/" />
-        </SOURCES>
-      </library>
-    </orderEntry>
   </component>
 </module>
