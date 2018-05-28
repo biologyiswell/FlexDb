@@ -13,19 +13,19 @@ This represents some examples from **flexibility** and **readability** provided 
 @Table(name = "engineers")
 public class Engineer {
 
-	/**
-	 * This variable is marked with "ColumnAnchor" that is an annotation that is used to
-	 * represents that this field is main field from class. This annotation is indinpensable
-	 * on create an object that is handled by FlexDb. 
-	 */
-	@Column(name = "id", nonNull = true, updatable = false, type = SqlType.INTEGER)
-	@ColumnAnchor
-	private int id;
+    /**
+     * This variable is marked with "ColumnAnchor" that is an annotation that is used to
+     * represents that this field is main field from class. This annotation is indinpensable
+     * on create an object that is handled by FlexDb. 
+     */
+    @Column(name = "id", nonNull = true, updatable = false, type = SqlType.INTEGER)
+    @ColumnAnchor
+    private int id;
 	  
-	@Column(name = "age", nonNull = true, type = SqlType.INTEGER)  
-	private int age;  
+    @Column(name = "age", nonNull = true, type = SqlType.INTEGER)  
+    private int age;  
   
-	@Column(name = "name", nonNull = true, updatable = false, type = SqlType.VARCHAR, size = 64)  
+    @Column(name = "name", nonNull = true, updatable = false, type = SqlType.VARCHAR, size = 64)  
     private String name;  
   
     @Column(name = "address", nonNull = true, type = SqlType.VARCHAR, size = 128)  
@@ -74,4 +74,3 @@ db.delete(engineer);
 // the "columnCheck" that is name from column and "argCheck" that is value from column
 db.delete(Engineer.class, "id", 1);
 ```
-
