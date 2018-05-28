@@ -1,0 +1,10 @@
+FlexDb:
+
+Fix/Bugs:
+    -> FIX (27/05/2018 18:28) Change a wrong format of Java Code, that the child classes that receive the database method operations based on
+    the type of the connections that are SingleFlexDb and PoolFlexDb must be removed the AbstractFlexDb from extends
+    this class to extends directly FlexDb class
+
+Fixed Bug & Additions:
+    -> ADDED (27/05/2018 18:26) (18/05/2018 22:04): Make that the when the check the table values if has a some alteration in table make the
+                               method make the alteration about the table in database
