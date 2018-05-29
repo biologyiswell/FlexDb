@@ -30,7 +30,7 @@ import java.sql.SQLException;
 /**
  * This is a pooled database provided by flexible database factory which creates a database handler that contains a pool
  * of connections with a pre-determined size which do operations about database and is recommended to database which
- * make a big quantity of operations
+ * make a big quantity of operations by time
  *
  * @author biologyiswell (26/05/2018 23:59)
  * @since 0.1
@@ -55,7 +55,18 @@ public class PoolFlexDb extends AbstractFlexDb {
      */
     private int connectionIndex;
 
-    // @Todo (29/05/2018 19:16) Create document
+    /**
+     * Creates an instance from Pooled Flexible Database which this database is recommended to make big quantity of
+     * operations about database by time
+     *
+     * @param host the host name which is used to connect to the MySQL Storage
+     * @param username the username which is used to authenticate the username credential
+     * @param password the password which is used to authenticate the password credential
+     * @param port the port which is used to connect to the MySQL Storage, if the port is equals -1, the default port
+     *             is set that is 3306
+     * @param connectionSize this represents the pre-determined from pool of connections
+     * @throws SQLException this exception is thrown if Connection construct fails
+     */
     PoolFlexDb(final String host, final String username, final String password, final int port, final int connectionSize) throws SQLException { // package-private
         super(host, username, password, port);
 

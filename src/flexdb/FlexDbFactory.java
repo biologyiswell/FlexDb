@@ -27,8 +27,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * FlexDbFactory, class,
- * This represents the class that create the types of flexible databases
+ * Database Factory class which make creations from flexible database more safely
  *
  * @author biologyiswell (18/05/2018 17:51)
  * @since 0.1

@@ -28,9 +28,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * SingleFlexDb, class,
- * This represents the class that is the flexible database single type, that contains a single connection that is
- * recommended to use in low operations
+ * This is a single database provided by flexible database factoryw hich creates a database handler that contains a
+ * single connection which do operations about database and is recommended to database which do low quantity of
+ * operations by time
  *
  * @author biologyiswell (26/05/2018 23:43)
  * @since 0.1
@@ -38,13 +38,23 @@ import java.sql.SQLException;
 public class SingleFlexDb extends AbstractFlexDb {
 
     /**
-     * Connection, variable,
-     * This variable represents the connection object that handle the operations about database
+     * This is the connection object which is used to handle the operations from flexible databases, and its handle by
+     * connection method
      * @since 0.1
      */
     private Connection connection;
 
-    // @Todo (29/05/2018 19:20) Create document
+    /**
+     * Creates an instance from Single Flexible Database which this database is recommended to make a low quantity
+     * operations about database by time
+     *
+     * @param host the host name which is used to connect to the MySQL Storage
+     * @param username the username which is used to authenticate the username credential
+     * @param password the password which is used to authenticate the password credential
+     * @param port the port which is used to connect to the MySQL Storage, if the port is equals -1, the default port
+     *             is set that is 3306
+     * @throws SQLException this exception is thrown if Connection construct fails
+     */
     SingleFlexDb(final String host, final String username, final String password, final int port) throws SQLException { // package-private
         super(host, username, password, port);
         this.connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port, username, password);
@@ -62,11 +72,8 @@ public class SingleFlexDb extends AbstractFlexDb {
     }
 
     /**
-     * Connection, method,
-     * This method checks if the connections is open, if not, open it, otherwise create the connection, and the method
-     * returns the connection object
-     *
-     * @return connection object
+     * Returns the single connection that the database provides
+     * @return the single connection
      * @since 0.1
      */
     @Override

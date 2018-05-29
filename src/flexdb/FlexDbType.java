@@ -32,13 +32,17 @@ package flexdb;
  */
 public enum FlexDbType {
 
-    // @Note This flexible database type, single, represents a database that contains a single connection, this type is
-    // used to databases that make low quantity of operations
-    // @since 0.1
+    /**
+     * Indicates the single flexible database which represents that the database only contains a single connection, this
+     * database type is recommended to database that make low quantity of operations by time
+     * @since 0.1
+     */
     SINGLE,
 
-    // @Note This flexible database type, pooled, represents a database that cnotains a pool of connections, this type is
-    // used to databases that make big quantity of operations and make the processment of informations more faster
-    // @since 0.1
+    /**
+     * Indicates the pooled flexible database which represents that the database has a pre-determined size from pool
+     * of connections, this database type is recommended to database that make big quantity of operations by time
+     * @since 0.1
+     */
     POOLED
 }
