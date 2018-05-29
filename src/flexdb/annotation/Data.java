@@ -29,6 +29,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Indicates that the class is a database and the name of database, which this annotation is necessary to initialize
+ * databases and make operations about table
+ *
  * @author biologyiswell (18/05/2018 17:44)
  * @since 0.1
  */
@@ -37,8 +40,8 @@ import java.lang.annotation.Target;
 public @interface Data {
 
     /**
-     * Name, string,
-     * This represents the name of database
+     * Indicates the name of database
+     * @return the name of database
      * @since 0.1
      */
     String name();

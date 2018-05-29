@@ -29,6 +29,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Indicates that class is a table and the name from table, which this annotation is necessary to make operations about
+ * tables
+ *
  * @author biologyiswell (18/05/2018 18:46)
  * @since 0.1
  */
@@ -37,8 +40,8 @@ import java.lang.annotation.Target;
 public @interface Table {
 
     /**
-     * Name, string,
-     * This represents the name from the table
+     * Indicates the name of table
+     * @return the name of table
      * @since 0.1
      */
     String name();

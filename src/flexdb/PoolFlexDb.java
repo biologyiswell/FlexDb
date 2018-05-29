@@ -28,9 +28,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * PoolFlexDb, class,
- * This represents the class that is the pool flexible database, that represents the database that contains a pool of
- * connections that is recommneded to make a high operations
+ * This is a pooled database provided by flexible database factory which creates a database handler that contains a pool
+ * of connections with a pre-determined size which do operations about database and is recommended to database which
+ * make a big quantity of operations
  *
  * @author biologyiswell (26/05/2018 23:59)
  * @since 0.1
@@ -38,40 +38,25 @@ import java.sql.SQLException;
 public class PoolFlexDb extends AbstractFlexDb {
 
     /**
-     * Max Connection Pool, variable,
-     * This variable must be declared to set a maximum of connections can be create on create the PoolFlexDb object
+     * Is the maximum pre-determined size that a pool of connection can have
      * @since 0.1
      */
     private static final int MAX_CONNECTION_POOL = 128;
 
     /**
-     * Connections, variable,
-     * This represents the connections array that contains the connections that is used on operations about flexible
-     * database
+     * Is the array of connection that has the pre-determined size defined by the constructor instatiation (by default)
      * @since 0.1
      */
     private Connection[] connections;
 
     /**
-     * Connection Index, variable,
-     * This represents the connection index that represents the connection that is used to make the operation
+     * This indicates the index from the connection that will be used on the next connection call
      * @since 0.1
      */
     private int connectionIndex;
 
-    /**
-     * PoolFlexDb, constructor,
-     * This constructor need be five arguments in argument-list, that represents the host, username, password, port
-     * and the connection size
-     *
-     * @param host the host
-     * @param username the username
-     * @param password the password
-     * @param port the port, that if the port is equals -1, this represents the default port that is 3306
-     * @param connectionSize the connection size from pool of connections
-     * @throws SQLException
-     */
-    public PoolFlexDb(final String host, final String username, final String password, final int port, final int connectionSize) throws SQLException {
+    // @Todo (29/05/2018 19:16) Create document
+    PoolFlexDb(final String host, final String username, final String password, final int port, final int connectionSize) throws SQLException { // package-private
         super(host, username, password, port);
 
         // @Note Check if the connection size from argument-list is bigger than MAX_CONNECTION_POOL
@@ -84,12 +69,13 @@ public class PoolFlexDb extends AbstractFlexDb {
     }
 
     /**
-     * Connection, method,
-     * This method checks if the connections is open, if not, open it, otherwise create the connection, and the method
-     * returns the connection object
+     * Gets the next connection indicates by connection index that is handled, which the connection that is get is
+     * provided by connection array pre-determined by the constructor instantiation (by default), which this make the
+     * check about if the connection is closed, in this case open the connection, the connection index is handle by the
+     * increase from this index based on the call of connection methods
      *
-     * @return connection object
-     * @throws SQLException
+     * @return the connection indicates by connection index
+     * @throws SQLException this exception is thrown if method call from Connection method fails
      * @since 0.1
      */
     @Override
@@ -100,8 +86,8 @@ public class PoolFlexDb extends AbstractFlexDb {
             this.connectionIndex = 0;
         }
 
-        // @Note Check if the connection from the current index is closed then, open it
-        if (this.connections[this.connectionIndex].isClosed()) {
+        // @Note Check if the connection from the current index is null or closed then, open it
+        if (this.connections[this.connectionIndex] == null || this.connections[this.connectionIndex].isClosed()) {
             this.connections[this.connectionIndex] = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port, username, password);
         }
 

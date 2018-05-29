@@ -29,6 +29,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * This annotation indicates that the marked field represents main field from column which make the principal checks on
+ * a operation handling about database
+ *
  * @author biologyiswell (20/05/2018 18:44)
  * @since 0.1
  */

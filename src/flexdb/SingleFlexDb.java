@@ -44,18 +44,8 @@ public class SingleFlexDb extends AbstractFlexDb {
      */
     private Connection connection;
 
-    /**
-     * SingleFlexDb, constructor,
-     * This constructor need four arguments that represents the host, username, password and port, that if the port is
-     * equals -1, the port is set by default that is 3306
-     *
-     * @param host the host
-     * @param username the username
-     * @param password the password
-     * @param port the port, if the port is equals -1, the port is set by default that is 3306
-     * @throws SQLException
-     */
-    public SingleFlexDb(final String host, final String username, final String password, final int port) throws SQLException {
+    // @Todo (29/05/2018 19:20) Create document
+    SingleFlexDb(final String host, final String username, final String password, final int port) throws SQLException { // package-private
         super(host, username, password, port);
         this.connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port, username, password);
     }
