@@ -35,7 +35,7 @@ import java.sql.SQLException;
  * @author biologyiswell (26/05/2018 23:43)
  * @since 0.1
  */
-public class SingleFlexDb extends AbstractFlexDb {
+public class SingleFlexDb extends FlexDb {
 
     /**
      * This is the connection object which is used to handle the operations from flexible databases, and its handle by
@@ -67,7 +67,6 @@ public class SingleFlexDb extends AbstractFlexDb {
      * @param connection the connection
      */
     public SingleFlexDb(final Connection connection) {
-        super(connection);
         this.connection = connection;
     }
 

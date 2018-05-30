@@ -35,7 +35,7 @@ import java.sql.SQLException;
  * @author biologyiswell (26/05/2018 23:59)
  * @since 0.1
  */
-public class PoolFlexDb extends AbstractFlexDb {
+public class PoolFlexDb extends FlexDb {
 
     /**
      * Is the maximum pre-determined size that a pool of connection can have

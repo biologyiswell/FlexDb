@@ -35,27 +35,28 @@ import java.sql.SQLException;
 public class FlexDbFactory {
 
     /**
-     * New Pooled Database, method,
-     * This method creates an instance from pooled flexible database type, that is the database that contains a pool of
-     * connections
+     * Creates an instance of pooled flexible database, to handle operations about database, which this database has a
+     * fixed size of connections
      *
-     * @param host the host
-     * @param username the username
-     * @param password the password
-     * @param port the port, if the port is equals -1 this represents the default port that is 3306
-     * @param poolSize the size of connections that is create to pool of connection
-     * @return FlexDb object with pool of connections
+     * @param host the host name which is used to connect to the MySQL Storage
+     * @param username the username which is used to authenticate the username credential
+     * @param password the password which is used to authenticate the password credential
+     * @param port the port which is used to connect to the MySQL Storage, if the port is equals -1, the default port
+     *             is set that is 3306
+     * @param connectionSize this represents the pre-determined from pool of connections
+     * @return Pooled Flexible Database object
+     * @throws SQLException this exception is thrown if Connection construct fails
      * @since 0.1
      */
-    public static FlexDb newPooledDatabase(final String host, final String username, final String password, final int port,  int poolSize) throws SQLException {
-        return new PoolFlexDb(host, username, password, port, poolSize);
+    public static FlexDb newPooledDatabase(final String host, final String username, final String password, final int port, int connectionSize) throws SQLException {
+        return new PoolFlexDb(host, username, password, port, connectionSize);
     }
 
     /**
-     * New Single Database, method,
-     * This method creates an instance from single flexible database type, that is the database that contains a single
-     * connection
+     * Creates an instance of single flexible database, to handle operations about database, which this database has a
+     * single connection
      *
+     * @see #newSingleDatabase(String, String, String, int)
      * @param connection the connection that is used by the single flexible database to make operations
      * @return FlexDb object with single connection
      * @since 0.1
@@ -65,10 +66,8 @@ public class FlexDbFactory {
     }
 
     /**
-     * New Single Database, method,
-     * This method creates an instance from single flexible database type, that is the database that contains a single
-     * connection, this method need four arguments in argument-list that is host, username, password and port that
-     * represents the informations from a connection
+     * Creates an instance of single flexible database, to handle operations about database, which this database has a
+     * single connection
      *
      * @param host the host
      * @param username the username

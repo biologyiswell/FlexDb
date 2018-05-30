@@ -30,8 +30,7 @@ import flexdb.annotation.Table;
 import flexdb.util.SqlType;
 
 import java.lang.reflect.Field;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,9 +41,60 @@ import java.util.Map;
  * This represents the FlexDb class that represents the main class that handles the methods about operations in database
  *
  * @author biologyiswell (18/05/2018 17:24)
+ * @version 0.1.5
  * @since 0.1
  */
 public abstract class FlexDb {
+
+    protected String host;
+    protected String username;
+    protected String password;
+    protected int port;
+
+    /**
+     * Creates an instance of flexible database which this database handler hass not a flexible database type to handle,
+     * this constructor is created to database types that construct the database handler with a different constructor
+     * argument-list
+     *
+     * @since 0.1.5
+     */
+    FlexDb() { // package-private
+    }
+
+    /**
+     * Creates an instance of flexible database which this database handler has not a flexible database type to handle
+     *
+     * @param host the host name which is used to connect to the MySQL Storage
+     * @param username the username which is used to authenticate the username credential
+     * @param password the password which is used to authenticate the password credential
+     * @param port the port which is used to connect to the MySQL Storage, if the port is equals -1, the default port
+     *             is set that is 3306
+     * @since 0.1
+     */
+    FlexDb(final String host, final String username, final String password, final int port) { // package-private
+        if (host == null) throw new NullPointerException("host");
+        if (username == null) throw new NullPointerException("username");
+        if (password == null) throw new NullPointerException("password");
+
+        this.host = host;
+        this.username = username;
+        this.password = password;
+        this.port = port == -1 ? 3306 : port;
+    }
+
+    // Abstract Methods
+
+    /**
+     * Connection, method,
+     * This method checks if the connections is open, if not, open it, otherwise create the connection, and the method
+     * returns the connection object
+     *
+     * @return connection object
+     * @since 0.1
+     */
+    public abstract Connection connection() throws SQLException;
+
+    // Methods
 
     /**
      * Database, method,
@@ -219,7 +269,12 @@ public abstract class FlexDb {
      * @param operation the operation that will be checked
      */
     protected void checkOperation(final String operation) {
-        // @Note Nothing to check
+        // @Note This statement execute the operation
+        try (final Statement statement = this.connection().createStatement()) {
+            statement.executeUpdate(operation);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -229,7 +284,28 @@ public abstract class FlexDb {
      * @param operations the operations that will be check
      */
     protected void checkOperations(final String... operations) {
-        // @Note Nothing to check
+        // @Note This statement execute the operations
+        try (final Connection connection = this.connection(); final Statement statement = connection.createStatement()) {
+            // @Note Disable the auto-commit to make the operations without need commit each one
+            // @Note !! When change the configurations about the connection is important that the selected connection
+            // make a variable instead of use the "connection" method, because the pooled flexible database make the
+            // configuration about a other connection instead of the current connection that create the statement
+            connection.setAutoCommit(false);
+
+            // @Note Add the operations that contains in the operations array into a statement in a batch
+            for (final String operation : operations) {
+                statement.addBatch(operation);
+            }
+
+            // @Note Execute the batch operations
+            statement.executeBatch();
+
+            // @Note Commit the changes about the operations
+            connection.commit();
+            connection.setAutoCommit(true);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -242,19 +318,13 @@ public abstract class FlexDb {
      * @param table the table annotation that contains the table name
      */
     protected void checkDelete(final Object object, final Class<?> klass, final Data data, final Table table) {
-        // @Note Check if the "data" annotation is null, this represents that the class not contains the data annotation
-        // then can not be initialize the database
-        if (data == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a database because not contains the annotation \"" + Data.class.getName() + "\".");
-
-        // @Note Check if the database name is empty
-        if (data.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Data\" annotation with empty name.");
-
-        // @Note Check if the "table" annotation is null, this represents that the class not contains the table
-        // annotation then can not be initialize the table
-        if (table == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a table because not contains the annotation \"" + Table.class.getName() + "\"");
-
-        // @Note Check if the table name is empty
-        if (table.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Table\" annotation with empty name.");
+        this.checkDatabaseAndTable(klass, data, table);
+        // @Note This statement makes the DELETE statement from the object
+        try (final Statement statement = this.connection().createStatement()) {
+            statement.executeUpdate(this.createDeleteStatement(object, klass, data, table));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -268,19 +338,14 @@ public abstract class FlexDb {
      * @param argCheck the argument value that will be check in the column
      */
     protected void checkDelete(final Class<?> klass, final Data data, final Table table, final String columnCheck, final Object argCheck) {
-        // @Note Check if the "data" annotation is null, this represents that the class not contains the data annotation
-        // then can not be initialize the database
-        if (data == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a database because not contains the annotation \"" + Data.class.getName() + "\".");
+        this.checkDatabaseAndTable(klass, data, table);
 
-        // @Note Check if the database name is empty
-        if (data.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Data\" annotation with empty name.");
-
-        // @Note Check if the "table" annotation is null, this represents that the class not contains the table
-        // annotation then can not be initialize the table
-        if (table == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a table because not contains the annotation \"" + Table.class.getName() + "\"");
-
-        // @Note Check if the table name is empty
-        if (table.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Table\" annotation with empty name.");
+        // @Note This statement makes the execute from the DELETE statement
+        try (final Statement statement = this.connection().createStatement()) {
+            statement.executeUpdate(this.createDeleteStatement(data, table, columnCheck, argCheck));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -294,19 +359,14 @@ public abstract class FlexDb {
      * @since 0.1
      */
     protected void checkUpdate(final Object object, final Class<?> klass, final Data data, final Table table) {
-        // @Note Check if the "data" annotation is null, this represents that the class not contains the data annotation
-        // then can not be initialize the database
-        if (data == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a database because not contains the annotation \"" + Data.class.getName() + "\".");
+        this.checkDatabaseAndTable(klass, data, table);
 
-        // @Note Check if the database name is empty
-        if (data.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Data\" annotation with empty name.");
-
-        // @Note Check if the "table" annotation is null, this represents that the class not contains the table
-        // annotation then can not be initialize the table
-        if (table == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a table because not contains the annotation \"" + Table.class.getName() + "\"");
-
-        // @Note Check if the table name is empty
-        if (table.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Table\" annotation with empty name.");
+        // @Note This statement makes the execute from the update about the object
+        try (final Statement statement = this.connection().createStatement()) {
+            statement.executeUpdate(this.createUpdateStatement(object, klass, data, table));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -324,19 +384,14 @@ public abstract class FlexDb {
      * @param args the arguments that will be updated to the row from table
      */
     protected void checkUpdate(final Class<?> klass, final Data data, final Table table, final String whereCheck, final Object argCheck, final Object... args) {
-        // @Note Check if the "data" annotation is null, this represents that the class not contains the data annotation
-        // then can not be initialize the database
-        if (data == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a database because not contains the annotation \"" + Data.class.getName() + "\".");
+        this.checkDatabaseAndTable(klass, data, table);
 
-        // @Note Check if the database name is empty
-        if (data.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Data\" annotation with empty name.");
-
-        // @Note Check if the "table" annotation is null, this represents that the class not contains the table
-        // annotation then can not be initialize the table
-        if (table == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a table because not contains the annotation \"" + Table.class.getName() + "\"");
-
-        // @Note Check if the table name is empty
-        if (table.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Table\" annotation with empty name.");
+        // @Note This statement executes the update statement to database
+        try (final Statement statement = this.connection().createStatement()) {
+            statement.executeUpdate(this.createUpdateStatement(klass, data, table, whereCheck, argCheck, args));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -351,19 +406,14 @@ public abstract class FlexDb {
      * @since 0.1
      */
     protected void checkInsert(final Object object, final Class<?> klass, final Data data, final Table table) {
-        // @Note Check if the "data" annotation is null, this represents that the class not contains the data annotation
-        // then can not be initialize the database
-        if (data == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a database because not contains the annotation \"" + Data.class.getName() + "\".");
+        this.checkDatabaseAndTable(klass, data, table);
 
-        // @Note Check if the database name is empty
-        if (data.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Data\" annotation with empty name.");
-
-        // @Note Check if the "table" annotation is null, this represents that the class not contains the table
-        // annotation then can not be initialize the table
-        if (table == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a table because not contains the annotation \"" + Table.class.getName() + "\"");
-
-        // @Note Check if the table name is empty
-        if (table.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Table\" annotation with empty name.");
+        // @Note This statement executes the operation that insert the values into the columns in a row
+        try (final Statement statement = this.connection().createStatement()) {
+            statement.executeUpdate(this.createInsertStatement(object, klass, data, table));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -378,19 +428,14 @@ public abstract class FlexDb {
      * @param args the arguments that represents the values from the columns
      */
     protected void checkInsertWithArguments(final Class<?> klass, final Data data, final Table table, final Object... args) {
-        // @Note Check if the "data" annotation is null, this represents that the class not contains the data annotation
-        // then can not be initialize the database
-        if (data == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a database because not contains the annotation \"" + Data.class.getName() + "\".");
+        this.checkDatabaseAndTable(klass, data, table);
 
-        // @Note Check if the database name is empty
-        if (data.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Data\" annotation with empty name.");
-
-        // @Note Check if the "table" annotation is null, this represents that the class not contains the table
-        // annotation then can not be initialize the table
-        if (table == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a table because not contains the annotation \"" + Table.class.getName() + "\"");
-
-        // @Note Check if the table name is empty
-        if (table.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Table\" annotation with empty name.");
+        // @Note This statement executes the operation that inserts the values from object to columns from table in row
+        try (final Statement statement = this.connection().createStatement()) {
+            statement.executeUpdate(this.createInsertStatementWithArguments(klass, data, table, args));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -403,19 +448,41 @@ public abstract class FlexDb {
      * @since 0.1
      */
     protected void checkTable(final Class<?> klass, final Data data, final Table table) {
-        // @Note Check if the "data" annotation is null, this represents that the class not contains the data annotation
-        // then can not be initialize the database
-        if (data == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a database because not contains the annotation \"" + Data.class.getName() + "\".");
+        this.checkDatabaseAndTable(klass, data, table);
 
-        // @Note Check if the database name is empty
-        if (data.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Data\" annotation with empty name.");
+        // @Note This statement executes the operation about create table in database if not exists, the method
+        // "createTableStatement" makes the parse from class from argument list "klass", that the parse read the
+        // fields that contains the "Column" annotation that contains the informations about a column
+        try (final Statement statement = this.connection().createStatement()) {
+            final ResultSet resultSet;
+            try {
+                resultSet = this.connection().createStatement().executeQuery("SELECT * FROM " + data.name() + "." + table.name() + " LIMIT 1");
 
-        // @Note Check if the "table" annotation is null, this represents that the class not contains the table
-        // annotation then can not be initialize the table
-        if (table == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a table because not contains the annotation \"" + Table.class.getName() + "\"");
+                // @Note This method "createAlterStatement" makes that if has not modifications about the current
+                // columns from table and database columns from table, this method returns the "", that represents
+                // an empty string
+                final String alterStatement = this.createAlterStatement(klass, data, table, resultSet.getMetaData());
 
-        // @Note Check if the table name is empty
-        if (table.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Table\" annotation with empty name.");
+                // @Note This condition makes the check if the alter statement is not empty
+                if (!alterStatement.isEmpty()) {
+                    statement.executeUpdate(alterStatement);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+
+                // @Todo (19/05/2018 11:43): Make handle from errors about error code
+
+                // @Note When the try-catch block catch an error, the error that is catch is that the SELECT statement
+                // thrown an error, this represents that the query fails because the table not exists
+                statement.executeUpdate(this.createTableStatement(klass, data, table));
+            }
+
+            // @Note If the result set "next()" method is true then, the execute statement represents an alter
+            // statement if contains something, otherwise execute the table statement
+            // statement.executeUpdate(resultSet.next() ? this.createAlterStatement(klass, data, table, resultSet.getMetaData()) : this.createTableStatement(klass, data, table));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -433,6 +500,13 @@ public abstract class FlexDb {
 
         // @Note Check if the database name is empty
         if (data.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Data\" annotation with empty name.");
+
+        // @Note This statement executes the operation about create database if not exists
+        try (final Statement statement = this.connection().createStatement()) {
+            statement.executeUpdate("CREATE DATABASE IF NOT EXISTS " + data.name());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     // Create Statement Methods
@@ -936,5 +1010,30 @@ public abstract class FlexDb {
      */
     protected String createDeleteStatement(final Data data, final Table table, final String columnCheck, final Object columnValue) {
         return "DELETE FROM " + data.name() + "." + table.name() + " WHERE " + columnCheck + " = " + columnValue;
+    }
+
+    /**
+     * Checks the database annotation and table annotation if both from this annotations has the necessary requirements
+     * that the flexible database provides to the class
+     *
+     * @param klass the class where the database annotation and table annotation is
+     * @param data the data annotation that contains the database name which will be checked
+     * @param table the table annotation that contains the table name which will be checked
+     * @since 0.1
+     */
+    protected void checkDatabaseAndTable(final Class<?> klass, final Data data, final Table table) {
+        // @Note Check if the "data" annotation is null, this represents that the class not contains the data annotation
+        // then can not be initialize the database
+        if (data == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a database because not contains the annotation \"" + Data.class.getName() + "\".");
+
+        // @Note Check if the database name is empty
+        if (data.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Data\" annotation with empty name.");
+
+        // @Note Check if the "table" annotation is null, this represents that the class not contains the table
+        // annotation then can not be initialize the table
+        if (table == null) throw new NullPointerException("Class \"" + klass.getSimpleName() + "\" not represents a table because not contains the annotation \"" + Table.class.getName() + "\"");
+
+        // @Note Check if the table name is empty
+        if (table.name().isEmpty()) throw new RuntimeException("Class \"" + klass.getSimpleName() + "\" has \"Table\" annotation with empty name.");
     }
 }

@@ -24,8 +24,7 @@
 package flexdb;
 
 /**
- * FlexDbType, enum,
- * This represents the enum that contains the types from Flexible Database
+ * This enumeration defines the flexible database types which this project handle
  *
  * @author biologyiswell (18/05/2018 17:35)
  * @since 0.1
