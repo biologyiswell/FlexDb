@@ -46,6 +46,10 @@ import java.util.Map;
  */
 public abstract class FlexDb {
 
+    /**
+     * Host, username, password and port variables that is used to make the connection with MySQL Storage
+     * @since 0.1
+     */
     protected String host;
     protected String username;
     protected String password;
@@ -85,11 +89,10 @@ public abstract class FlexDb {
     // Abstract Methods
 
     /**
-     * Connection, method,
-     * This method checks if the connections is open, if not, open it, otherwise create the connection, and the method
-     * returns the connection object
+     * Returns the connection based on flexible database type
      *
-     * @return connection object
+     * @return the connection
+     * @throws SQLException this exception is thrown if method relationed with connection fails
      * @since 0.1
      */
     public abstract Connection connection() throws SQLException;
@@ -97,12 +100,9 @@ public abstract class FlexDb {
     // Methods
 
     /**
-     * Database, method,
-     * This method check if the database name exists in the main database, if the database name not exists create the
-     * database in the main storage, otherwise do nothing
+     * Check the database state, if the database not exists in MySQL Storage, it is created
      *
-     * @param klass the class that contains the data annotation that can get the name from the database to can check
-     *              if the database exists on the main storage
+     * @param klass the class that contains the database annotation to can get database name and make the check
      * @since 0.1
      */
     public final void database(final Class<?> klass) {
@@ -114,12 +114,12 @@ public abstract class FlexDb {
     }
 
     /**
-     * Table, method,
-     * This method check if the table name exists in the database, if the table name not exists, create the table in
-     * the database that is represented by the Data annotation that contains in the class
+     * Check the table state, if the table not exists in MySQL Storage, it is created, this method do the build from the
+     * all columns from table in database
      *
-     * @param klass the class that contains the data annotation that contains the database name that the table will be
-     *              create, and the table annotation that contains the table name
+     * @param klass the class that contains the database annotation, table annotation and column annotation which
+     *              provide to methods informations about class that are database name, table name and column names
+     *              with informations about (column name, column type, among others)
      * @since 0.1
      */
     public final void table(final Class<?> klass) {
@@ -319,6 +319,7 @@ public abstract class FlexDb {
      */
     protected void checkDelete(final Object object, final Class<?> klass, final Data data, final Table table) {
         this.checkDatabaseAndTable(klass, data, table);
+
         // @Note This statement makes the DELETE statement from the object
         try (final Statement statement = this.connection().createStatement()) {
             statement.executeUpdate(this.createDeleteStatement(object, klass, data, table));
@@ -481,7 +482,8 @@ public abstract class FlexDb {
             // statement if contains something, otherwise execute the table statement
             // statement.executeUpdate(resultSet.next() ? this.createAlterStatement(klass, data, table, resultSet.getMetaData()) : this.createTableStatement(klass, data, table));
         } catch (SQLException e) {
-            e.printStackTrace();
+            // @Note Make the check about the error that occurs when create the table into the database
+            // e.printStackTrace();
         }
     }
 
